@@ -7,7 +7,7 @@ import (
 )
 
 type Timer struct {
-	interval          time.Duration // 指针每隔多久往前移动一格
+	interval          time.Duration // 时间间隔
 	ticker            *time.Ticker
 	tasks             *list.List
 	currentTime       int
@@ -26,11 +26,11 @@ type Task struct {
 	ExecTime int           // 执行时间
 }
 
-func (this *Task) AddExecTime(current int) {
+func (this *Task) addExecTime(current int) {
 	this.ExecTime = current + int(this.delay.Seconds())
 }
 
-// New 创建时间轮
+// New 创建定时器
 func NewTimer(interval time.Duration) *Timer {
 	if interval <= 0 {
 		return nil
@@ -48,13 +48,13 @@ func NewTimer(interval time.Duration) *Timer {
 	return tw
 }
 
-// Start 启动时间轮
+// Start
 func (tw *Timer) Start() {
 	tw.ticker = time.NewTicker(tw.interval)
 	go tw.start()
 }
 
-// Stop 停止时间轮
+// Stop
 func (tw *Timer) Stop() {
 	tw.stopChannel <- true
 }
@@ -115,7 +115,7 @@ func (tw *Timer) tickHandler() {
 		if task.Count == 0 {
 			tw.tasks.Remove(e)
 		} else {
-			task.AddExecTime(tw.currentTime)
+			task.addExecTime(tw.currentTime)
 		}
 
 		e = next
@@ -124,7 +124,7 @@ func (tw *Timer) tickHandler() {
 
 // 新增任务到链表中
 func (tw *Timer) addTask(task *Task) {
-	task.AddExecTime(tw.currentTime)
+	task.addExecTime(tw.currentTime)
 	tw.tasks.PushBack(task)
 }
 
